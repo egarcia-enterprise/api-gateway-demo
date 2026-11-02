@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kong Enterprise API Gateway: Retail Microservices Simulator</title>
+  
+  <!-- Tailwind CSS & Inter Font -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            kong: {
+              navy: '#06101E',
+              card: '#0B192C',
+              border: '#1E293B',
+              primary: '#0072CE',
+              hover: '#0058A3',
+              cyan: '#00D2FF',
+              emerald: '#10B981',
+              warning: '#F59E0B',
+              danger: '#EF4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #040914;
+      color: #F8FAFC;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0B192C;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px -3px rgba(0, 210, 255, 0.3);
+    }
+    .glow-green {
+      box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.3);
+    }
+    .glow-red {
+      box-shadow: 0 0 20px -3px rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-kong-primary selection:text-white custom-scrollbar">
+
+  <!-- EXECUTIVE HEADER -->
+  <header class="border-b border-kong-border bg-kong-navy/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-kong-primary to-kong-cyan flex items-center justify-center font-extrabold text-white text-xl shadow-lg">
+          K
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            Kong Enterprise API Gateway: Retail Microservices Security & Traffic Simulator
+            <span class="text-xs font-mono font-normal bg-kong-primary/20 text-kong-cyan px-2 py-0.5 rounded-full border border-kong-primary/40">Live Demo</span>
+          </h1>
+          <p class="text-xs text-slate-400">
+            Interactive E-Commerce Traffic Simulation | Architecture & Business Executive Briefing
+          </p>
+        </div>
+      </div>
+
+      <!-- STATUS BADGES -->
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Gateway Status: <strong class="text-white">Active</strong></span>
+        </div>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-kong-card border border-kong-primary/40 text-kong-cyan font-mono">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>Avg Overhead: <strong>&lt; 1.8ms</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SIMULATOR CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- IMPACT METRICS DASHBOARD -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-kong-card p-4 rounded-xl border border-kong-border">
+        <div class="text-xs text-slate-400 font-medium">Total Requests Processed</div>
+        <div id="metric-total" class="text-2xl font-mono font-extrabold text-white mt-1">0</div>
+        <div class="text-[10px] text-slate-400 mt-1">Routed via Kong Gateway</div>
+      </div>
+
+      <div class="bg-kong-card p-4 rounded-xl border border-kong-border">
+        <div class="text-xs text-slate-400 font-medium">Blocked Security Attacks / Spikes</div>
+        <div id="metric-blocked" class="text-2xl font-mono font-extrabold text-rose-400 mt-1">0</div>
+        <div class="text-[10px] text-rose-500/90 font-medium mt-1">Rate limit & auth enforcement</div>
+      </div>
+
+      <div class="bg-kong-card p-4 rounded-xl border border-kong-border">
+        <div class="text-xs text-slate-400 font-medium">Avg API Latency (ms)</div>
+        <div id="metric-latency" class="text-2xl font-mono font-extrabold text-kong-cyan mt-1">1.8 ms</div>
+        <div class="text-[10px] text-slate-400 mt-1">Sub-millisecond proxy engine</div>
+      </div>
+
+      <div class="bg-kong-card p-4 rounded-xl border border-kong-border">
+        <div class="text-xs text-slate-400 font-medium">Est. Protected Revenue (€)</div>
+        <div id="metric-revenue" class="text-2xl font-mono font-extrabold text-emerald-400 mt-1">€0</div>
+        <div class="text-[10px] text-slate-400 mt-1">Outage & fraud loss mitigation</div>
+      </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN WORKSPACE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- CONTROLS & ARCHITECTURE PANEL (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- TRAFFIC GENERATOR CONTROL BOX -->
+        <div class="bg-kong-card p-5 rounded-xl border border-kong-border space-y-4">
+          <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <svg class="w-4 h-4 text-kong-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              1. Traffic & Attack Generator
+            </h2>
+            <span class="text-[11px] font-mono text-slate-400">Client Simulator</span>
+          </div>
+
+          <!-- TARGET MICROSERVICE SELECTOR -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-300">Target Microservice Endpoint</label>
+            <select id="select-endpoint" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-kong-primary">
+              <option value="/api/v1/products">🛒 Product Catalog Service (/api/v1/products)</option>
+              <option value="/api/v1/checkout">💳 Checkout & Payments Service (/api/v1/checkout)</option>
+              <option value="/api/v1/user/profile">👤 User Profile Service (/api/v1/user/profile)</option>
+            </select>
+          </div>
+
+          <!-- TRAFFIC TRIGGER BUTTONS -->
+          <div class="grid grid-cols-2 gap-2.5 pt-1">
+            <button onclick="sendTraffic('standard')" class="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-all flex items-center justify-center gap-1.5">
+              <span>🟢 Normal Request</span>
+            </button>
+
+            <button onclick="sendTraffic('burst')" class="px-3 py-2.5 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 text-xs font-medium rounded-lg border border-amber-800/60 transition-all flex items-center justify-center gap-1.5">
+              <span>💥 Burst (8 Req/sec)</span>
+            </button>
+
+            <button onclick="sendTraffic('malicious')" class="px-3 py-2.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 transition-all flex items-center justify-center gap-1.5">
+              <span>⚠️ SQLi / Attack Payload</span>
+            </button>
+
+            <button onclick="sendTraffic('noauth')" class="px-3 py-2.5 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 text-xs font-medium rounded-lg border border-purple-800/60 transition-all flex items-center justify-center gap-1.5">
+              <span>🔓 Missing API Key</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KONG GATEWAY POLICY & PLUGIN TOGGLES -->
+        <div class="bg-kong-card p-5 rounded-xl border border-kong-border space-y-4">
+          <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+              2. Kong Enterprise Plugin Controls
+            </h2>
+            <span class="text-[11px] font-mono text-emerald-400">Policy Engine</span>
+          </div>
+
+          <!-- TOGGLE 1: RATE LIMITING -->
+          <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-lg border border-slate-800">
+            <div>
+              <div class="text-xs font-semibold text-white">Rate Limiting Plugin</div>
+              <div class="text-[11px] text-slate-400">Max 5 requests / min per IP</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="plugin-ratelimit" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-kong-primary"></div>
+            </label>
+          </div>
+
+          <!-- TOGGLE 2: API KEY AUTHENTICATION -->
+          <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-lg border border-slate-800">
+            <div>
+              <div class="text-xs font-semibold text-white">Key Authentication Plugin</div>
+              <div class="text-[11px] text-slate-400">Verifies header <code class="text-kong-cyan">apikey: ecom_live_89a...</code></div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="plugin-auth" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-kong-primary"></div>
+            </label>
+          </div>
+
+          <!-- TOGGLE 3: WAF INLINE PAYLOAD INSPECTION -->
+          <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-lg border border-slate-800">
+            <div>
+              <div class="text-xs font-semibold text-white">WAF & SQLi Protection Plugin</div>
+              <div class="text-[11px] text-slate-400">Blocks malicious injection attempts</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="plugin-waf" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-kong-primary"></div>
+            </label>
+          </div>
+
+          <div class="pt-1 flex justify-between items-center text-[11px] text-slate-400">
+            <span>Current Window Counter:</span>
+            <span id="rate-counter-display" class="font-mono text-kong-cyan font-bold">0 / 5 reqs used</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GATEWAY EXECUTION VISUALIZER & LOGS (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- VISUAL PIPELINE FLOW TRACE -->
+        <div class="bg-kong-card p-5 rounded-xl border border-kong-border space-y-4">
+          <div class="border-b border-slate-800 pb-3 flex justify-between items-center">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              Real-Time Gateway Execution Path
+            </h2>
+            <span id="status-chip" class="text-[11px] font-mono px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">Idle</span>
+          </div>
+
+          <!-- PIPELINE NODES -->
+          <div class="grid grid-cols-4 gap-2 text-center text-xs">
+            
+            <div id="step-client" class="p-3 bg-slate-900 rounded-lg border border-slate-800 transition-all">
+              <div class="font-bold text-slate-300">Client</div>
+              <div class="text-[10px] text-slate-500 mt-1">HTTP Request</div>
+            </div>
+
+            <div id="step-gateway" class="p-3 bg-slate-900 rounded-lg border border-slate-800 transition-all">
+              <div class="font-bold text-kong-cyan">Kong Proxy</div>
+              <div class="text-[10px] text-slate-500 mt-1">Sub-ms Routing</div>
+            </div>
+
+            <div id="step-plugins" class="p-3 bg-slate-900 rounded-lg border border-slate-800 transition-all">
+              <div class="font-bold text-purple-400">Plugins</div>
+              <div class="text-[10px] text-slate-500 mt-1">Auth / Rate / WAF</div>
+            </div>
+
+            <div id="step-backend" class="p-3 bg-slate-900 rounded-lg border border-slate-800 transition-all">
+              <div class="font-bold text-emerald-400">Microservice</div>
+              <div class="text-[10px] text-slate-500 mt-1">Target Response</div>
+            </div>
+
+          </div>
+
+          <!-- LAST RESPONSE HTTP DETAILS CARD -->
+          <div id="response-preview" class="p-4 bg-slate-950 rounded-lg border border-slate-800 font-mono text-xs space-y-2">
+            <div class="flex justify-between text-slate-400 border-b border-slate-800 pb-2">
+              <span>Status Code: <strong id="resp-status" class="text-slate-300">200 OK</strong></span>
+              <span>Latency: <strong id="resp-latency" class="text-kong-cyan">1.6 ms</strong></span>
+            </div>
+            <div class="text-slate-300 text-[11px] overflow-x-auto whitespace-pre-wrap" id="resp-body">
+              { "message": "Ready to simulate requests." }
+            </div>
+          </div>
+        </div>
+
+        <!-- TERMINAL AUDIT LOG -->
+        <div class="bg-kong-card p-5 rounded-xl border border-kong-border space-y-3">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-kong-cyan"></span>
+              Kong Gateway Admin & Traffic Log
+            </h3>
+            <button onclick="clearLogs()" class="text-[11px] text-slate-400 hover:text-slate-200">Clear Logs</button>
+          </div>
+
+          <div id="terminal-logs" class="h-44 bg-slate-950 p-3 rounded-lg border border-slate-900 font-mono text-[11px] space-y-1.5 overflow-y-auto custom-scrollbar">
+            <div class="text-slate-500">[SYSTEM] Kong Gateway initialized. Waiting for incoming HTTP traffic...</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- EXECUTIVE PERSPECTIVE BRIEFING TABS -->
+    <div class="bg-kong-card rounded-xl border border-kong-border p-6 space-y-4">
+      <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <span class="text-xs font-mono text-kong-cyan uppercase font-semibold">Value Proposition Translator</span>
+          <h3 class="text-lg font-bold text-white">How to Present Kong Gateway Across C-Suite Stakeholders</h3>
+        </div>
+
+        <!-- TAB BUTTONS -->
+        <div class="flex gap-2">
+          <button onclick="switchExecTab('cto')" id="exectab-cto" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-kong-primary text-white border border-kong-primary">
+            CTO View
+          </button>
+          <button onclick="switchExecTab('ciso')" id="exectab-ciso" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">
+            CISO View
+          </button>
+          <button onclick="switchExecTab('cfo')" id="exectab-cfo" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">
+            CFO View
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT PANELS -->
+      <div id="execview-cto" class="space-y-2 text-xs text-slate-300 leading-relaxed">
+        <strong class="text-kong-cyan font-semibold block">Chief Technology Officer (CTO) Focus: Engineering Velocity & Microservice Decoupling</strong>
+        <p>
+          Without Kong, every retail microservice team (Checkout, Inventory, Search) has to manually write authorization, rate limiting, and logging in their own language. Kong acts as a centralized Ingress controller, offloading cross-cutting concerns so developers can focus purely on business logic.
+        </p>
+      </div>
+
+      <div id="execview-ciso" class="space-y-2 text-xs text-slate-300 leading-relaxed hidden">
+        <strong class="text-emerald-400 font-semibold block">Chief Information Security Officer (CISO) Focus: Perimeter Defense & Zero Trust</strong>
+        <p>
+          Kong enforces mTLS (mutual TLS), OAuth2/OIDC token verification, and WAF inspection directly at the edge. Malicious SQL payloads, unauthorized key access, and volumetric DDoS attacks are blocked before they hit internal Kubernetes cluster pods.
+        </p>
+      </div>
+
+      <div id="execview-cfo" class="space-y-2 text-xs text-slate-300 leading-relaxed hidden">
+        <strong class="text-purple-400 font-semibold block">Chief Financial Officer (CFO) Focus: TCO Reduction & Outage Revenue Protection</strong>
+        <p>
+          Preventing a single 2-hour API blackout during Black Friday saves millions in direct lost revenue and brand damage. Furthermore, standardizing on Kong Enterprise eliminates hundreds of hours of redundant developer labor annually across the engineering organization.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-kong-border bg-kong-navy py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div>
+        Created for <span class="text-slate-300 font-semibold">Kong Senior Enterprise AE Interview Demonstrations</span>
+      </div>
+      <div class="font-mono text-[11px] text-slate-400">
+        Google AE Background | Enterprise MEDDPICC & Technical GTM
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT SIMULATION LOGIC -->
+  <script>
+    // State Variables
+    let totalRequests = 0;
+    let blockedRequests = 0;
+    let rateLimitCounter = 0;
+    let rateLimitTimer = null;
+    let protectedRevenue = 0;
+
+    // Reset rate limit window every minute
+    function startRateLimitWindow() {
+      if(!rateLimitTimer) {
+        rateLimitTimer = setInterval(() => {
+          rateLimitCounter = 0;
+          updateRateDisplay();
+        }, 60000);
+      }
+    }
+
+    function updateRateDisplay() {
+      document.getElementById('rate-counter-display').innerText = `${rateLimitCounter} / 5 reqs used`;
+    }
+
+    function updateMetrics() {
+      document.getElementById('metric-total').innerText = totalRequests;
+      document.getElementById('metric-blocked').innerText = blockedRequests;
+      document.getElementById('rate-counter-display').innerText = `${rateLimitCounter} / 5 reqs used`;
+      document.getElementById('metric-revenue').innerText = '€' + protectedRevenue.toLocaleString();
+    }
+
+    function logTerminal(msg, type = 'info') {
+      const logs = document.getElementById('terminal-logs');
+      const time = new Date().toISOString().substring(11, 19);
+      const div = document.createElement('div');
+      
+      let colorClass = 'text-slate-300';
+      if (type === 'error') colorClass = 'text-rose-400 font-semibold';
+      if (type === 'warn') colorClass = 'text-amber-400';
+      if (type === 'success') colorClass = 'text-emerald-400';
+      
+      div.className = colorClass;
+      div.innerHTML = `<span class="text-slate-600">[${time}]</span> ${msg}`;
+      logs.appendChild(div);
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('terminal-logs').innerHTML = '<div class="text-slate-500">[SYSTEM] Logs cleared. Gateway running...</div>';
+    }
+
+    function highlightStep(stepId, colorClass) {
+      const el = document.getElementById(stepId);
+      if (!el) return;
+      el.className = `p-3 bg-slate-900 rounded-lg border border-slate-800 transition-all ${colorClass}`;
+      setTimeout(() => {
+        el.className = "p-3 bg-slate-900 rounded-lg border border-slate-800 transition-all";
+      }, 700);
+    }
+
+    // MAIN TRAFFIC SIMULATION ENGINE
+    function sendTraffic(type) {
+      startRateLimitWindow();
+      const endpoint = document.getElementById('select-endpoint').value;
+      const rateLimitActive = document.getElementById('plugin-ratelimit').checked;
+      const authActive = document.getElementById('plugin-auth').checked;
+      const wafActive = document.getElementById('plugin-waf').checked;
+
+      // Burst logic handling
+      if (type === 'burst') {
+        logTerminal(`[CLIENT] Triggering high-concurrency traffic burst (8 requests/sec) to ${endpoint}...`, 'warn');
+        for (let i = 1; i <= 8; i++) {
+          setTimeout(() => executeSingleRequest('standard', endpoint, rateLimitActive, authActive, wafActive), i * 120);
+        }
+        return;
+      }
+
+      executeSingleRequest(type, endpoint, rateLimitActive, authActive, wafActive);
+    }
+
+    function executeSingleRequest(type, endpoint, rateLimitActive, authActive, wafActive) {
+      totalRequests++;
+      rateLimitCounter++;
+      
+      highlightStep('step-client', 'border-kong-cyan shadow-lg');
+      
+      setTimeout(() => {
+        highlightStep('step-gateway', 'border-kong-primary shadow-lg');
+      }, 150);
+
+      setTimeout(() => {
+        highlightStep('step-plugins', 'border-purple-500 shadow-lg');
+        
+        let statusCode = 200;
+        let responseMessage = {};
+        let blockedReason = null;
+        const latency = (Math.random() * 1.2 + 0.8).toFixed(2);
+
+        // 1. Check Rate Limiting Plugin
+        if (rateLimitActive && rateLimitCounter > 5) {
+          statusCode = 429;
+          blockedReason = "Rate limit exceeded (HTTP 429 Too Many Requests)";
+          responseMessage = {
+            error: "Too Many Requests",
+            message: "API rate limit of 5 requests/min exceeded. Request throttled by Kong Gateway.",
+            status: 429
+          };
+        }
+
+        // 2. Check Key Auth Plugin
+        else if (authActive && type === 'noauth') {
+          statusCode = 401;
+          blockedReason = "Missing or invalid API Key (HTTP 401 Unauthorized)";
+          responseMessage = {
+            error: "Unauthorized",
+            message: "No API key found in request headers. Blocked by Kong Key-Auth Plugin.",
+            status: 401
+          };
+        }
+
+        // 3. Check WAF / Malicious Payload Plugin
+        else if (wafActive && type === 'malicious') {
+          statusCode = 403;
+          blockedReason = "SQL Injection payload detected by WAF plugin";
+          responseMessage = {
+            error: "Forbidden",
+            message: "Malicious pattern 'SELECT * FROM users WHERE 1=1' intercepted at edge.",
+            status: 403
+          };
+        }
+
+        // Render Outcome
+        if (statusCode !== 200) {
+          blockedRequests++;
+          protectedRevenue += (endpoint.includes('checkout') ? 450 : 120);
+          
+          document.getElementById('status-chip').className = "text-[11px] font-mono px-2.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800";
+          document.getElementById('status-chip').innerText = `BLOCKED (${statusCode})`;
+
+          document.getElementById('resp-status').className = "text-rose-400 font-bold";
+          document.getElementById('resp-status').innerText = `${statusCode} ${responseMessage.error}`;
+          document.getElementById('resp-latency').innerText = `${latency} ms`;
+          document.getElementById('resp-body').innerText = JSON.stringify(responseMessage, null, 2);
+
+          logTerminal(`[KONG GATEWAY] BLOCKED: ${blockedReason} -> Endpoint: ${endpoint}`, 'error');
+        } else {
+          highlightStep('step-backend', 'border-emerald-500 shadow-lg');
+          
+          responseMessage = {
+            status: 200,
+            endpoint: endpoint,
+            timestamp: new Date().toISOString(),
+            data: {
+              status: "Success",
+              payload: "Microservice returned response payload successfully.",
+              processed_by: "Kong Enterprise Ingress"
+            }
+          };
+
+          document.getElementById('status-chip').className = "text-[11px] font-mono px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800";
+          document.getElementById('status-chip').innerText = "200 OK (SUCCESS)";
+
+          document.getElementById('resp-status').className = "text-emerald-400 font-bold";
+          document.getElementById('resp-status').innerText = "200 OK";
+          document.getElementById('resp-latency').innerText = `${latency} ms`;
+          document.getElementById('resp-body').innerText = JSON.stringify(responseMessage, null, 2);
+
+          logTerminal(`[KONG GATEWAY] PROXIED: HTTP 200 OK -> ${endpoint} (${latency}ms)`, 'success');
+        }
+
+        updateMetrics();
+      }, 300);
+    }
+
+    // EXECUTIVE TAB SWITCHER
+    function switchExecTab(tabKey) {
+      document.getElementById('execview-cto').classList.add('hidden');
+      document.getElementById('execview-ciso').classList.add('hidden');
+      document.getElementById('execview-cfo').classList.add('hidden');
+
+      document.getElementById('exectab-cto').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white";
+      document.getElementById('exectab-ciso').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white";
+      document.getElementById('exectab-cfo').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-400 border border-slate-700 hover:text-white";
+
+      document.getElementById(`execview-${tabKey}`).classList.remove('hidden');
+      document.getElementById(`exectab-${tabKey}`).className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-kong-primary text-white border border-kong-primary";
+    }
+
+    window.onload = function() {
+      updateMetrics();
+    };
+  </script>
+
+</body>
+</html>
