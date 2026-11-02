@@ -48,5 +48,3 @@ The live simulator is hosted on GitHub Pages:
 
 **ENRIQUE GARCÍA**  
 - **Role:** Senior Enterprise Account Executive  
-- **LinkedIn:** [linkedin.com/in/enriquegarciacollado](https://linkedin.com/in/enriquegarciacollado)  
-- **Email:** jose.enrique.garcia.collado@gmail.com
